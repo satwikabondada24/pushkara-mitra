@@ -45,10 +45,10 @@ The Vercel project should use:
 
 ### Connect a GitHub repository
 
-1. Push this project folder to a GitHub repository. This working folder currently has no `.git` repository or configured Git remote.
-2. Sign in to Vercel, choose **Add New → Project**, and import that GitHub repository. If prompted, grant Vercel access to the repository.
+1. This project is published at [github.com/satwikabondada24/pushkara-mitra](https://github.com/satwikabondada24/pushkara-mitra) on the `main` branch. Future changes can be pushed with `git add .`, `git commit -m "Describe your changes"`, and `git push`.
+2. Sign in to Vercel, choose **Add New → Project**, and import `satwikabondada24/pushkara-mitra`. If prompted, grant Vercel access to the repository.
 3. Set the root directory to this project folder and confirm the build/output settings listed above.
 4. If using Supabase, add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` under the Vercel project's Environment Variables. Add them for the Production environment (and Preview if wanted); do not upload `.env` files.
 5. Click **Deploy**. When Vercel reports deployment complete, open the generated `https://…vercel.app` URL and test the home page plus a nested route such as `/ghats/pushkar-ghat`.
 
-A public deployment URL is not available until the repository is pushed and Vercel completes a deployment. Use Vercel's generated URL to share the site from other devices; a custom domain can be added later in Vercel project settings.
+A public deployment URL is not available until Vercel completes the deployment. Use Vercel's generated URL to share the site from other devices; a custom domain can be added later in Vercel project settings.
