@@ -1,0 +1,111 @@
+@import "tailwindcss";
+@config "../tailwind.config.js";
+
+@layer components {
+  .dark-card {
+    background-color: #0d1f32;
+    border: 1px solid #1e3a54;
+    border-radius: 1rem;
+    transition: all 0.2s ease-in-out;
+  }
+  .dark-card-hover:hover {
+    background-color: #14283e;
+    border-color: #00b4d8;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px -10px rgba(0, 180, 216, 0.25);
+  }
+  .white-card {
+    background-color: #fff;
+    border: 1px solid #d8e3e8;
+    border-radius: 1rem;
+  }
+  .border-gray-custom {
+    border-color: #d8e3e8;
+  }
+  .glow-btn-primary {
+    color: #fff;
+    background: linear-gradient(135deg, #00b4d8, #0077b6);
+    border-radius: 0.75rem;
+    font-weight: 700;
+    transition: all 0.2s ease-in-out;
+    box-shadow: 0 4px 14px rgba(0, 180, 216, 0.39);
+  }
+  .glow-btn-primary:hover {
+    background: linear-gradient(135deg, #00c4e8, #0087c6);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(0, 180, 216, 0.55);
+  }
+  .glow-btn-emerald {
+    color: #fff;
+    background: linear-gradient(135deg, #10b981, #059669);
+    border-radius: 0.75rem;
+    font-weight: 700;
+    transition: all 0.2s ease-in-out;
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+  }
+  .glow-btn-emerald:hover {
+    background: linear-gradient(135deg, #34d399, #047857);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.55);
+  }
+  .glow-btn-saffron {
+    color: #0f172a;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    border-radius: 0.75rem;
+    font-weight: 800;
+    transition: all 0.2s ease-in-out;
+    box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
+  }
+  .glow-btn-saffron:hover {
+    background: linear-gradient(135deg, #fbbf24, #e58706);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.55);
+  }
+  .badge-status-low {
+    color: #34d399;
+    background-color: rgba(16, 185, 129, 0.15);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+  }
+  .badge-status-med {
+    color: #fbbf24;
+    background-color: rgba(245, 158, 11, 0.15);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+  }
+  .badge-status-critical {
+    color: #fca5a5;
+    background-color: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+  }
+}
+
+.leaflet-container {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  z-index: 0;
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.3);
+  padding: 0;
+}
+
+.leaflet-popup-content {
+  margin: 0;
+  width: auto !important;
+}
+
+.leaflet-popup-tip {
+  box-shadow: 0 4px 16px -4px rgba(0, 0, 0, 0.2);
+}
+
+.leaflet-control-zoom a {
+  border-radius: 0.5rem !important;
+  border: none !important;
+  background: #0d1f32 !important;
+  color: #fff !important;
+  border-bottom: 1px solid #1e3a54 !important;
+}
+
+.leaflet-control-zoom a:hover {
+  background: #14283e !important;
+}
