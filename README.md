@@ -1,54 +1,70 @@
-# Pushkara Mitra
+Pushkara Mitra
+Digital Pilgrim Management & Safety Ecosystem
+Live Website: https://pushkara-mitra-chi.vercel.app/
 
-Public-facing React, Vite, and TypeScript website for exploring Godavari ghats, crowd status, recommendations, food, safety information, and demo seva bookings.
+Overview
+Pushkara Mitra is a digital platform designed to support pilgrim management, improve visitor safety, and make the pilgrimage experience more organised. It brings relevant information and management tools together in a web-based interface for pilgrims and authorised personnel.
 
-## Run locally
+The goal is to help people access useful information more easily while supporting staff with the coordination and management of pilgrim-related activities.
 
-```sh
-npm install
-npm run dev
-```
+Objectives
+Make pilgrimage-related information easier to access.
+Support safer and more organised pilgrim management.
+Provide a centralised interface for relevant users and authorised staff.
+Use digital tools to improve coordination and the overall visitor experience.
+User Portals
+The project has been designed around role-based access and workflows. The exact options available depend on the features enabled in the deployed version.
 
-Before publishing changes, run:
+1. User Portal
+Intended for pilgrims and visitors to access the services and information made available by the platform.
 
-```sh
-npm run typecheck
-npm run lint
-npm run build
-```
+2. Staff Portal
+Intended for staff members who help manage on-ground activities and support pilgrim coordination.
 
-## Demo mode and Supabase
+3. Administration / Official Portal
+Intended for authorised administrators or officials to oversee platform operations and manage relevant information.
 
-The site works without backend credentials using clearly labelled sample ghat/crowd data. Favorites, demo sign-in, and demo seva bookings are stored in the current browser only. Demo sign-in does not authenticate a real account, and demo bookings do not contact a temple, reserve real availability, or collect payment.
+Note: Update these descriptions to match the actual pages and actions implemented in your current deployment. Do not describe a feature as operational unless it works in the deployed application.
 
-To load shared ghat and crowd data, create a Supabase project and apply [`supabase-schema.sql`](./supabase-schema.sql) once. Populate `public.ghats` and `public.crowd_status` using the column names in that schema. Configure these **public client** values in a local `.env` file for development and as Vercel project environment variables for deployment:
+Key Benefits
+Centralised access: Brings relevant pilgrimage services into one web application.
+Role-oriented workflows: Separates visitor-facing functions from staff and official responsibilities.
+Improved coordination: Aims to make pilgrim-related operations easier to organise.
+Accessible interface: Can be accessed through a modern web browser without installing a desktop application.
+Room to expand: The platform can be extended with additional safety, information, and management capabilities.
+How to Access
+Open the live website: https://pushkara-mitra-chi.vercel.app/
+Choose the portal or option available for your role.
+Follow the instructions displayed on the website.
+Use only the functions available to your account and permissions.
+Technology
+The project is deployed on Vercel. Add the frontend framework, backend, database, authentication provider, APIs, and other libraries here after confirming the technologies used in the repository.
 
-```dotenv
-VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_ANON_KEY=your-public-anon-key
-```
+Example checklist:
 
-Never put a Supabase service-role key, database password, or other secret in a `VITE_` variable or browser code. The anon key is public by design; protect data with Supabase Row Level Security. The included schema grants public read access to the ghat and crowd tables only. Real authentication, shared favorites, and production booking/payment processing are not implemented.
+Frontend: [Add framework and libraries]
+Backend/API: [Add backend or API details, if applicable]
+Database: [Add database, if applicable]
+Deployment: Vercel
+Future Enhancements
+Possible future improvements include:
 
-## Deploy to Vercel
+Live crowd-density and queue information.
+Emergency assistance and safety alerts.
+Location-aware guidance and important-point navigation.
+Real-time announcements and notifications.
+Dashboards and reports for authorised staff.
+Multilingual support for pilgrims.
+These are potential enhancements, not a claim that they are already implemented.
 
-The Vercel project should use:
+Project Status
+The project has a deployed web version. The availability of individual features depends on the current implementation.
 
-- **Framework preset:** Vite
-- **Root directory:** the folder containing this README and `package.json`
-- **Build command:** `npm run build`
-- **Output directory:** `dist`
-- **Install command:** `npm install`
-- **Node.js:** 20.19+ or 22.12+ (required by the installed Vite version)
+Contributing
+If you are contributing to the project, create a branch for your changes, test the relevant workflows, and submit a pull request for review.
 
-`vercel.json` rewrites page requests to the SPA entry point so refreshing `/ghats`, `/crowd-map`, and other client-side routes works on the deployed domain. Public assets are in `public/` and are referenced from the site root.
+Live Demo
+Visit Pushkara Mitra to explore the deployed application.
 
-### Connect a GitHub repository
+Pushkara Mitra — using digital technology to support a safer, more organised pilgrimage experience.
 
-1. This project is published at [github.com/satwikabondada24/pushkara-mitra](https://github.com/satwikabondada24/pushkara-mitra) on the `main` branch. Future changes can be pushed with `git add .`, `git commit -m "Describe your changes"`, and `git push`.
-2. Sign in to Vercel, choose **Add New → Project**, and import `satwikabondada24/pushkara-mitra`. If prompted, grant Vercel access to the repository.
-3. Set the root directory to this project folder and confirm the build/output settings listed above.
-4. If using Supabase, add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` under the Vercel project's Environment Variables. Add them for the Production environment (and Preview if wanted); do not upload `.env` files.
-5. Click **Deploy**. When Vercel reports deployment complete, open the generated `https://…vercel.app` URL and test the home page plus a nested route such as `/ghats/pushkar-ghat`.
-
-A public deployment URL is not available until Vercel completes the deployment. Use Vercel's generated URL to share the site from other devices; a custom domain can be added later in Vercel project settings.
