@@ -17,6 +17,7 @@ export interface Ghat {
 
 export type CrowdLevel = 'LOW' | 'MODERATE' | 'HIGH';
 export type RiskLevel = 'SAFE' | 'MODERATE' | 'HIGH';
+export type CrowdDataStatus = 'LIVE' | 'DEMO' | 'STALE';
 
 export interface GhatCrowdData {
   ghatId: string;
@@ -32,12 +33,31 @@ export interface GhatCrowdData {
   entryThroughput: number;
   exitThroughput: number;
   lastUpdated: string;
+  dataStatus: CrowdDataStatus;
 }
 
 export const THRESHOLDS = {
   LOW: 40,
   MODERATE: 70,
 };
+
+export const CROWD_DATA_FRESHNESS_LIMIT_MS = 5 * 60 * 1000;
+
+export function calculateOccupancyPercentage(occupancy: number, effectiveCapacity: number): number {
+  if (!Number.isFinite(occupancy) || occupancy < 0) {
+    throw new Error(`Invalid occupancy reading: ${occupancy}`);
+  }
+  if (!Number.isFinite(effectiveCapacity) || effectiveCapacity <= 0) {
+    throw new Error(`Invalid effective capacity: ${effectiveCapacity}`);
+  }
+
+  const percentage = (occupancy / effectiveCapacity) * 100;
+  if (!Number.isFinite(percentage) || percentage < 0) {
+    throw new Error(`Occupancy percentage could not be calculated for ${occupancy}/${effectiveCapacity}`);
+  }
+
+  return Math.min(100, Math.max(0, percentage));
+}
 
 export function getCrowdLevel(percentage: number): CrowdLevel {
   if (percentage < THRESHOLDS.LOW) return 'LOW';
@@ -78,6 +98,31 @@ export function getRecommendationText(crowdLevel: CrowdLevel): string {
   }
 }
 
+export function getCrowdDataStatus(
+  source: 'demo' | 'supabase',
+  lastUpdated?: string | null,
+): CrowdDataStatus {
+  if (source === 'demo') return 'DEMO';
+
+  if (!lastUpdated) return 'STALE';
+
+  const lastUpdatedTime = new Date(lastUpdated).getTime();
+  if (Number.isNaN(lastUpdatedTime)) return 'STALE';
+
+  return Date.now() - lastUpdatedTime > CROWD_DATA_FRESHNESS_LIMIT_MS ? 'STALE' : 'LIVE';
+}
+
+export function getCrowdDataSourceLabel(status: CrowdDataStatus): string {
+  switch (status) {
+    case 'LIVE':
+      return 'LIVE';
+    case 'STALE':
+      return 'STALE';
+    case 'DEMO':
+      return 'DEMO';
+  }
+}
+
 export const ghats: Ghat[] = [
   {
     id: 'pushkar-ghat',
@@ -92,7 +137,7 @@ export const ghats: Ghat[] = [
     vipTicketPrice: 50,
     hasWheelchairRamp: true,
     hasParking: true,
-image: '/godavari-home.png',
+    image: '/godavari-home.png',
     description:
       'The primary and most sacred ghat located in Rajamahendravaram. Features wide granite steps, emergency medical booths, and high-capacity holding areas along the Godavari River.',
   },
@@ -239,25 +284,30 @@ const demoExitThroughput: Record<string, number> = {
 export function getDemoCrowdData(ghatList: Ghat[] = ghats): GhatCrowdData[] {
   return ghatList.map((g) => {
     const pct = demoCrowdPercentages[g.id] ?? 50;
-    const crowdLevel = getCrowdLevel(pct);
+    const activePilgrims = Math.max(0, Math.round((pct / 100) * g.effectiveCapacity));
+    const crowdPercentage = Number(
+      calculateOccupancyPercentage(activePilgrims, g.effectiveCapacity).toFixed(1),
+    );
+    const crowdLevel = getCrowdLevel(crowdPercentage);
     const riskLevel = getRiskLevel(crowdLevel);
     return {
       ghatId: g.id,
       name: g.name,
       latitude: g.latitude,
       longitude: g.longitude,
-      crowdPercentage: pct,
+      crowdPercentage,
       crowdLevel,
       riskLevel,
       status: getStatusText(crowdLevel),
       recommendation: getRecommendationText(crowdLevel),
-      activePilgrims: Math.round((pct / 100) * g.effectiveCapacity),
+      activePilgrims,
       entryThroughput: demoEntryThroughput[g.id] ?? 6000,
       exitThroughput: demoExitThroughput[g.id] ?? 5500,
       lastUpdated: new Date().toLocaleTimeString('en-IN', {
         hour: '2-digit',
         minute: '2-digit',
       }),
+      dataStatus: 'DEMO',
     };
   });
 }
