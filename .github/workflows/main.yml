@@ -14,20 +14,33 @@ jobs:
   repair:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout main
-        uses: actions/checkout@v4
-        with:
-          ref: main
-          fetch-depth: 0
-
-      - name: Remove malformed paths
+      - name: Prepare Git repository
         shell: bash
         run: |
+          git init repo
+          cd repo
+          git remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
+          git fetch --no-tags origin main
+          git checkout --orphan repair-work
+          git read-tree FETCH_HEAD
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
+
+      - name: Remove malformed paths and push repair
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          cd repo
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
           python3 - <<'PY'
           import subprocess
 
           raw = subprocess.check_output([
-              "git", "ls-tree", "-r", "-z", "--name-only", "HEAD"
+              "git", "ls-files", "-z"
           ])
           paths = [p for p in raw.split(b"\0") if p]
           bad = [
@@ -36,10 +49,10 @@ jobs:
           ]
 
           if not bad:
-              raise SystemExit("No matching malformed paths found.")
+              raise SystemExit("No matching malformed paths found; stopping safely.")
 
           for path in bad:
-              print("Removing:", repr(path))
+              print("Removing malformed path:", repr(path))
 
           subprocess.run(
               ["git", "update-index", "--force-remove", "-z", "--stdin"],
@@ -48,8 +61,6 @@ jobs:
           )
           PY
 
-          git -c user.name="github-actions[bot]" \
-              -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
-              commit -m "Remove malformed source-code paths"
-
+          git commit -m "Remove malformed source-code paths"
+          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
           git push origin HEAD:main
