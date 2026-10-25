@@ -2,6 +2,9 @@
 name: Repair malformed Git paths
 
 on:
+  push:
+    branches:
+      - repair/malformed-paths
   workflow_dispatch:
 
 permissions:
@@ -22,46 +25,31 @@ jobs:
         run: |
           python3 - <<'PY'
           import subprocess
-          import sys
 
-          result = subprocess.run(
-              ["git", "ls-tree", "-r", "-z", "--name-only", "HEAD"],
-              capture_output=True,
-              check=True
-          )
-
-          paths = result.stdout.split(b"\0")
+          raw = subprocess.check_output([
+              "git", "ls-tree", "-r", "-z", "--name-only", "HEAD"
+          ])
+          paths = [p for p in raw.split(b"\0") if p]
           bad = [
               p for p in paths
-              if p.startswith(b"src/")
-              and (b'\ncontent":"' in p or b'\ncontent":' in p)
+              if p.startswith(b"src/") and b'\ncontent":"' in p
           ]
 
           if not bad:
-              print("No matching malformed paths found. Nothing changed.")
-              sys.exit(0)
+              raise SystemExit("No matching malformed paths found.")
 
           for path in bad:
-              print("Removing malformed path:", repr(path))
+              print("Removing:", repr(path))
 
           subprocess.run(
               ["git", "update-index", "--force-remove", "-z", "--stdin"],
               input=b"\0".join(bad) + b"\0",
-              check=True
-          )
-
-          tree = subprocess.check_output(["git", "write-tree"]).decode().strip()
-          parent = subprocess.check_output(
-              ["git", "rev-parse", "HEAD"]
-          ).decode().strip()
-
-          commit = subprocess.check_output([
-              "git", "commit-tree", tree, "-p", parent,
-              "-m", "Remove malformed source-code paths"
-          ]).decode().strip()
-
-          subprocess.run(
-              ["git", "push", "origin", f"{commit}:refs/heads/main"],
-              check=True
+              check=True,
           )
           PY
+
+          git -c user.name="github-actions[bot]" \
+              -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+              commit -m "Remove malformed source-code paths"
+
+          git push origin HEAD:main
