@@ -14,17 +14,20 @@ jobs:
   repair:
     runs-on: ubuntu-latest
     steps:
-      - name: Prepare Git repository
+      - name: Prepare current main
         shell: bash
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
         run: |
+          set -euo pipefail
           git init repo
           cd repo
           git remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
           git fetch --no-tags origin main
-          git checkout --orphan repair-work
-          git read-tree FETCH_HEAD
-        env:
-          GITHUB_REPOSITORY: ${{ github.repository }}
+          PARENT=$(git rev-parse FETCH_HEAD)
+          git read-tree "$PARENT"
+
+          echo "$PARENT" > ../parent.txt
 
       - name: Remove malformed paths and push repair
         shell: bash
@@ -32,24 +35,23 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: |
+          set -euo pipefail
           cd repo
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          PARENT=$(cat ../parent.txt)
 
           python3 - <<'PY'
           import subprocess
 
-          raw = subprocess.check_output([
-              "git", "ls-files", "-z"
-          ])
+          raw = subprocess.check_output(["git", "ls-files", "-z"])
           paths = [p for p in raw.split(b"\0") if p]
           bad = [
               p for p in paths
-              if p.startswith(b"src/") and b'\ncontent":"' in p
+              if p.startswith(b"src/")
+              and (b'\ncontent":"' in p or b' content":"' in p)
           ]
 
           if not bad:
-              raise SystemExit("No matching malformed paths found; stopping safely.")
+              raise SystemExit("No malformed source paths found. Nothing was pushed.")
 
           for path in bad:
               print("Removing malformed path:", repr(path))
@@ -61,6 +63,11 @@ jobs:
           )
           PY
 
-          git commit -m "Remove malformed source-code paths"
+          TREE=$(git write-tree)
+          COMMIT=$(printf '%s\n' "Remove malformed source-code paths" |
+            git -c user.name="github-actions[bot]" \
+                -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+                commit-tree "$TREE" -p "$PARENT")
+
           git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-          git push origin HEAD:main
+          git push origin "$COMMIT:refs/heads/main"
