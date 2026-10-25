@@ -1,0 +1,67 @@
+
+name: Repair malformed Git paths
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Remove malformed paths
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import subprocess
+          import sys
+
+          result = subprocess.run(
+              ["git", "ls-tree", "-r", "-z", "--name-only", "HEAD"],
+              capture_output=True,
+              check=True
+          )
+
+          paths = result.stdout.split(b"\0")
+          bad = [
+              p for p in paths
+              if p.startswith(b"src/")
+              and (b'\ncontent":"' in p or b'\ncontent":' in p)
+          ]
+
+          if not bad:
+              print("No matching malformed paths found. Nothing changed.")
+              sys.exit(0)
+
+          for path in bad:
+              print("Removing malformed path:", repr(path))
+
+          subprocess.run(
+              ["git", "update-index", "--force-remove", "-z", "--stdin"],
+              input=b"\0".join(bad) + b"\0",
+              check=True
+          )
+
+          tree = subprocess.check_output(["git", "write-tree"]).decode().strip()
+          parent = subprocess.check_output(
+              ["git", "rev-parse", "HEAD"]
+          ).decode().strip()
+
+          commit = subprocess.check_output([
+              "git", "commit-tree", tree, "-p", parent,
+              "-m", "Remove malformed source-code paths"
+          ]).decode().strip()
+
+          subprocess.run(
+              ["git", "push", "origin", f"{commit}:refs/heads/main"],
+              check=True
+          )
+          PY
